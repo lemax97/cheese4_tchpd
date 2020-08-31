@@ -20,6 +20,11 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad.TouchpadStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Button.ButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 
 public class GameScreen extends BaseScreen
 {
@@ -28,6 +33,8 @@ public class GameScreen extends BaseScreen
     private BaseActor floor;
     private Image winImage;   
     private boolean win;
+
+    private Touchpad touchPad;
 
     private float timeElapsed;
     private Label timeLabel;
@@ -95,30 +102,78 @@ public class GameScreen extends BaseScreen
         winImage = new Image( winTex );
         winImage.setVisible(false);
 
+        TouchpadStyle touchpadStyle = new TouchpadStyle();
+        Texture padKnobTexture = new Texture("joystick-knob.png");
+        game.skin.add("padKnobImage", padKnobTexture);
+        touchpadStyle.knob = game.skin.getDrawable("padKnobImage");
+
+        Texture padBackTexture = new Texture("joystick-bg.png");
+        game.skin.add("padBackImage", padBackTexture);
+        touchpadStyle.background = game.skin.getDrawable("padBackImage");
+
+        touchPad = new Touchpad(5, touchpadStyle);
+
+        Texture pauseTexture = new Texture("pause.png");
+        game.skin.add("pauseImage", pauseTexture);
+        ButtonStyle pauseStyle = new ButtonStyle();
+        pauseStyle.up = game.skin.getDrawable("pauseImage");
+
+        Button pauseButton = new Button(pauseStyle);
+
+        pauseButton.addListener(
+            new InputListener(){
+                @Override
+                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                    togglePaused();
+                    return true;
+                }
+            });
+
         timeLabel = new Label( "Time: --", game.skin, "uiLabelStyle" );
 
-        uiTable.pad(10);
-        uiTable.add().expandX();
-        uiTable.add(timeLabel);
+//        uiTable.pad(10);
+//        uiTable.add().expandX();
+//        uiTable.add(timeLabel);
+//        uiTable.row();
+//        uiTable.add(winImage).colspan(2).padTop(50);
+//        uiTable.row();
+//        uiTable.add().colspan(2).expandY();
+
+        uiTable.add(timeLabel).right().pad(10);
         uiTable.row();
-        uiTable.add(winImage).colspan(2).padTop(50);
+        uiTable.add(winImage).padTop(50);
         uiTable.row();
-        uiTable.add().colspan(2).expandY();
+        uiTable.add().expandY();
+        uiTable.row();
+
+        Table controlTable = new Table();
+        controlTable.pad(25);
+        Texture controlTexture = new Texture(Gdx.files.internal("pixels-white.png"), true);
+        game.skin.add("controlTexture", controlTexture);
+        controlTable.background(game.skin.getTiledDrawable("controlTexture"));
+        controlTable.add(touchPad);
+        controlTable.add().expandX();
+        controlTable.add(pauseButton);
+
+        uiTable.add(controlTable).width(600).height(200);
         
         win = false;
     }
 
     public void update(float dt) 
     {   
-        mousey.setAccelerationXY(0,0);
-        if (Gdx.input.isKeyPressed(Keys.LEFT)) 
-            mousey.addAccelerationXY(-100,0);
-        if (Gdx.input.isKeyPressed(Keys.RIGHT))
-            mousey.addAccelerationXY(100,0);
-        if (Gdx.input.isKeyPressed(Keys.UP)) 
-            mousey.addAccelerationXY(0,100);
-        if (Gdx.input.isKeyPressed(Keys.DOWN)) 
-            mousey.addAccelerationXY(0,-100);
+//        mousey.setAccelerationXY(0,0);
+//        if (Gdx.input.isKeyPressed(Keys.LEFT))
+//            mousey.addAccelerationXY(-100,0);
+//        if (Gdx.input.isKeyPressed(Keys.RIGHT))
+//            mousey.addAccelerationXY(100,0);
+//        if (Gdx.input.isKeyPressed(Keys.UP))
+//            mousey.addAccelerationXY(0,100);
+//        if (Gdx.input.isKeyPressed(Keys.DOWN))
+//            mousey.addAccelerationXY(0,-100);
+
+        float accelerate = 100.0f;
+        mousey.setAccelerationXY(touchPad.getKnobPercentX() * accelerate, touchPad.getKnobPercentY() * accelerate);
 
         // set correct animation
         if ( mousey.getSpeed() > 1 && mousey.getAnimationName().equals("stop") )

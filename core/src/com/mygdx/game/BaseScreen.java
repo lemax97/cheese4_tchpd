@@ -20,8 +20,10 @@ public abstract class BaseScreen implements Screen, InputProcessor
 
     protected Table uiTable;
 
-    public final int viewWidth  = 800;
+    public final int viewWidth  = 600;
     public final int viewHeight = 600;
+    public final int uiWidth    = 600;
+    public final int uiHeight   = 800;
 
     private boolean paused;
 
@@ -30,7 +32,7 @@ public abstract class BaseScreen implements Screen, InputProcessor
         game = g;
 
         mainStage = new Stage( new FitViewport(viewWidth, viewHeight) );
-        uiStage   = new Stage( new FitViewport(viewWidth, viewHeight) );
+        uiStage   = new Stage( new FitViewport(uiWidth, uiHeight) );
 
         uiTable = new Table();
         uiTable.setFillParent(true);
@@ -63,8 +65,10 @@ public abstract class BaseScreen implements Screen, InputProcessor
         // render
         Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        
+
+        Gdx.gl.glViewport(0, uiHeight - viewHeight, viewWidth, viewHeight);
         mainStage.draw();
+        Gdx.gl.glViewport(0, 0, uiWidth, uiHeight);
         uiStage.draw();
     }
 
